@@ -1,8 +1,20 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 void main() {
   runApp(new FriendlyChatApp());
 }
+
+final ThemeData kIOSTheme = new ThemeData(
+    primarySwatch: Colors.orange,
+    primaryColor: Colors.tealAccent[400],
+    primaryColorBrightness: Brightness.light);
+
+final ThemeData kDefaultTheme = new ThemeData(
+  primarySwatch: Colors.red,
+  accentColor: Colors.orangeAccent[400],
+);
 
 class FriendlyChatApp extends StatelessWidget {
   @override
@@ -10,6 +22,9 @@ class FriendlyChatApp extends StatelessWidget {
     return new MaterialApp(
       title: 'Friendly Chat App',
       debugShowCheckedModeBanner: false,
+      theme: defaultTargetPlatform == TargetPlatform.iOS
+          ? kIOSTheme
+          : kDefaultTheme,
       home: new ChatScreen(),
     );
   }
@@ -31,24 +46,34 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     return new Scaffold(
       appBar: new AppBar(
         title: new Text('Friendly Chat'),
+        elevation: Theme.of(context).platform == TargetPlatform.iOS ? 0.0 : 4.0,
       ),
-      body: new Column(
-        children: <Widget>[
-          new Flexible(
-            child: new ListView.builder(
-              padding: new EdgeInsets.all(8.0),
-              reverse: true,
-              itemBuilder: (_, int index) => _message[index],
-              itemCount: _message.length,
-            ),
+      body: new Container(
+          child: new Column(
+            children: <Widget>[
+              new Flexible(
+                child: new ListView.builder(
+                  padding: new EdgeInsets.all(8.0),
+                  reverse: true,
+                  itemBuilder: (_, int index) => _message[index],
+                  itemCount: _message.length,
+                ),
+              ),
+              new Divider(height: 1.0),
+              new Container(
+                decoration:
+                    new BoxDecoration(color: Theme.of(context).cardColor),
+                child: _buildTextComposer(),
+              ),
+            ],
           ),
-          new Divider(height: 1.0),
-          new Container(
-            decoration: new BoxDecoration(color: Theme.of(context).cardColor),
-            child: _buildTextComposer(),
-          ),
-        ],
-      ),
+          decoration: Theme.of(context).platform == TargetPlatform.iOS
+              ? new BoxDecoration(
+                  border: new Border(
+                    top: new BorderSide(color: Colors.red),
+                  ),
+                )
+              : null),
     );
   }
 
@@ -80,12 +105,19 @@ class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             ),
             new Container(
               margin: new EdgeInsets.symmetric(horizontal: 4.0),
-              child: new IconButton(
-                icon: new Icon(Icons.send),
-                onPressed: _isComposing
-                    ? () => _handleSubmitted(_textController.text)
-                    : null,
-              ),
+              child: Theme.of(context).platform == TargetPlatform.iOS
+                  ? new CupertinoButton(
+                      child: new Text('Send'),
+                      onPressed: _isComposing
+                          ? () => _handleSubmitted(_textController.text)
+                          : null,
+                    )
+                  : new IconButton(
+                      icon: new Icon(Icons.send),
+                      onPressed: _isComposing
+                          ? () => _handleSubmitted(_textController.text)
+                          : null,
+                    ),
             ),
           ],
         ),
